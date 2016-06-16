@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util-4.0.xsd
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+    <!-- 名为realms的bean需要在业务模块中声明 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager" 
+    	p:realms-ref="realms"
+    	p:subjectDAO.sessionStorageEvaluator.sessionStorageEnabled="false"
+    	p:subjectFactory-ref="subjectFactory"
+    	p:sessionManager-ref="sessionManager" />
+    
+    <bean id="subjectFactory" class="com.github.sa.core.web.mgt.StatelessDefaultSubjectFactory" />
+    
+    <!-- 会话管理器 -->
+    <bean id="sessionManager" class="org.apache.shiro.session.mgt.DefaultSessionManager" 
+    	p:sessionValidationSchedulerEnabled="false" />
+    
+    <!-- 名为filters和filterChainDefinitionMap的bean需要在业务模块中声明 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean" 
+    	p:securityManager-ref="securityManager"
+    	p:loginUrl="${app.loginUrl}"
+    	p:successUrl="${app.successUrl}"
+    	p:filters-ref="filters"
+    	p:filterChainDefinitionMap-ref="filterChainDefinitionMap" />
+    
+    <!-- 相当于调用SecurityUtils.setSecurityManager(securityManager) -->
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" 
+    	p:staticMethod="org.apache.shiro.SecurityUtils.setSecurityManager"
+    	p:arguments-ref="securityManager" />
+
+    <!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+    <bean id="lifecycleBeanPostProceStatelessr" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+    
+</beans>
